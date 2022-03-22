@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
+import { connect, useSelector } from "react-redux";
 
-import axios from "axios";
-function Home() {
+import {
+  pedidoDelete,
+  pedidoGet,
+  pedidoPost,
+  pedidoPut,
+} from "../actions/generalActions";
+function Home(props) {
   //coloquei tudo no mesmo arquivo porque estava
   //com pressa.
-  const baseUrl = "https://localhost:44427/home";
-  const [data, setData] = useState([]);
+  const { data } = useSelector((state) => state.general);
   const [usuario, setUsuario] = useState({
     id: "",
     nome: "",
   });
-  const pedidoGet = async () => {
+  /*const pedidoGet = async () => {
     await axios
       .get(baseUrl)
       .then((response) => {
@@ -60,43 +65,72 @@ function Home() {
         console.log(error);
       });
   };
-
+*/
   const handleChange = (event) => {
     const { name, value } = event.target;
+    console.log(name + " " + value);
+    console.log(usuario);
     setUsuario({
       ...usuario,
       [name]: value,
     });
   };
   useEffect(() => {
-    pedidoGet();
-  });
-
+    props.dispatch(pedidoGet());
+  }, [props]);
   return (
     <div class="d-flex align-items-start flex-column bd-highlight mb-3">
       <label>
         Nome:
         <input type="text" name="nome" required onChange={handleChange} />
       </label>
-      <button onClick={() => pedidoPost()}>Adicionar</button>
+      <button
+        onClick={() => {
+          props.dispatch(pedidoPost(usuario));
+          window.location.reload(false);
+        }}
+      >
+        Adicionar
+      </button>
       <table>
-        {data.map((usuario) => (
+        {data.map((data) => (
           <div>
-            <tr key={usuario.id}>
-              <td>{usuario.id}</td>
-              <td>{usuario.nome}</td>
+            <tr key={data.id}>
+              <td>{data.id}</td>
+              <td>{data.nome}</td>
             </tr>
           </div>
         ))}
       </table>
       <label>
         ID:
-        <input type="text" name="id" required onChange={handleChange} />
+        <select type="text" name="id" onChange={handleChange} required>
+          <option></option>
+          {data.map((data) => (
+            <option value={data.id}>{data.id}</option>
+          ))}
+        </select>
+        Nome:
+        <input type="text" name="nome" required onChange={handleChange} />
+        <button
+          onClick={() => {
+            props.dispatch(pedidoPut(usuario));
+            window.location.reload(false);
+          }}
+        >
+          Atualizar
+        </button>
       </label>
-      <button onClick={() => pedidoPut()}>Atualizar</button>
-      <button onClick={() => pedidoDelete()}>Deletar</button>
+      <button
+        onClick={() => {
+          props.dispatch(pedidoDelete(usuario.id));
+          window.location.reload(false);
+        }}
+      >
+        Deletar
+      </button>
     </div>
   );
 }
 
-export default Home;
+export default connect()(Home);
